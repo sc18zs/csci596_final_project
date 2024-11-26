@@ -33,14 +33,15 @@ Molecular Dynamics (MD) simulations are computationally intensive, requiring eff
   
 - Dynamic Partitioning identifies imbalances using a metric like the coefficient of variation and dynamically adjusts the computational topology to balance the workload.
 This ensures that each processor receives a more equitable distribution of particles, preventing overburdened or idle processors.
-   1. Step 1: Analyze Load Imbalance
-      Logic: Calculate the coefficient of variation (CV) of the particle distribution across the grid. Identify whether the load imbalance exceeds the defined threshold.
-   2. Step 2: Identify Imbalance Along Each Axis
-      Logic: Evaluate the particle count per axis by summing the particles along the other dimensions. Determine which axis has the most significant imbalance.
-   3. Step 3: Propose New Partitioning
-      Logic: Dynamically reallocate processors to regions with more particles.
-   4. Step 4: Rebalance Partitions
-      Logic: Redistribute the particle domain using the new topology. Ensure that the particle distribution aligns with the updated topology. Validate and Return.
+  Step 1: Analyze Load Imbalance
+     Logic: Calculate the coefficient of variation (CV) of the particle distribution across the grid. Identify whether the load imbalance exceeds the defined threshold.
+  Step 2: Identify Imbalance Along Each Axis
+     Logic: Evaluate the particle count per axis by summing the particles along the other dimensions. Determine which axis has the most significant imbalance.
+  Step 3: Propose New Partitioning
+     Logic: Dynamically reallocate processors to regions with more particles.
+  Step 4: Rebalance Partitions
+  
+     Logic: Redistribute the particle domain using the new topology. Ensure that the particle distribution aligns with the updated topology. Validate and Return.
 
 ## Deliverables
 - Optimized MD program addressing memory access inefficiencies.
