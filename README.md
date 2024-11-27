@@ -31,7 +31,7 @@ Molecular Dynamics (MD) simulations are computationally intensive, requiring eff
 - Refactor the triple nested loops for better memory locality.
 - Implement optimized communication protocols for parallel computation.
   
-- Adaptive partitioning attempts to maintain an even distribution of atoms across processors by adjusting the number of processors in each dimension (represented by the vproc array). The goal is to reduce load imbalance when the number of atoms per processor deviates significantly from the ideal value.
+- Proposed method attempts to maintain an even distribution of atoms across processors by adjusting the number of processors in each dimension (represented by the vproc array). The goal is to reduce load imbalance when the number of atoms per processor deviates significantly from the ideal value.
   
      The function first calculates the number of atoms each processor should ideally have (atoms_per_proc) based on the total number of atoms (nglob) and the number of processors. Then it checks the imbalance of atoms assigned to the current processor. If the difference (imbalance) between the number of atoms assigned to this processor and the ideal number (atoms_per_proc) exceeds a certain threshold (THRESHOLD), it tries to redistribute the atoms across processors. In case of significant imbalance, the topology (i.e., the vproc array, which likely defines the grid of processors) is adjusted to ensure that atoms are more evenly distributed.
 
