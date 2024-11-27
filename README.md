@@ -39,7 +39,7 @@ Molecular Dynamics (MD) simulations are computationally intensive, requiring eff
 ## Deliverables
 - Optimized MD program addressing memory access inefficiencies.
 - Reduced communication overhead with an improved parallel framework.
-- Balanced load distribution across processing units to enhance performance.
+- Balanced load distribution across processing units to enhance performance. With load balancing, idle time should be reduced and efficiency of the overall simulation is improved, utilizing the CPU resources more evenly. It also allows the system to adapt to changes, such as varying numbers of atoms or computational challenges.
 
 
 
