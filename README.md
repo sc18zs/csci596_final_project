@@ -10,15 +10,15 @@
 Molecular Dynamics (MD) simulations are computationally intensive, requiring efficient strategies to address challenges related to memory access, parallel communication, and processing power. This project aims to identify and implement methods to enhance the performance of MD simulations.
 
 ### Key Challenges
-1. **Inefficient Memory Access Due to Triple Nested Loops**  
-   - The current implementation employs a triple loop to iterate over each cell, with nested loops accessing neighboring cells to compute particle interactions.
-   - Non-contiguous memory access leads to a high cache miss rate, slowing down overall performance.
+1. **Inefficient Memory Access Due to Triple Nested Loops**
+   - The current implementation uses a triple loop to traverse each cell and accesses neighboring cells via nested loops to compute particle interactions.
+   - When the processor processes cells, memory access is often non-contiguous, and the order of accessing different cells may span large memory regions, increasing cache miss rates.
 
-2. **Communication Overhead in Parallel Computing**  
+3. **Communication Overhead in Parallel Computing**  
    - MD simulations divide the computational domain among multiple processors, requiring frequent information exchange between adjacent regions.
    - Non-optimized cell access order increases cross-node communication frequency, significantly impacting computation efficiency.
 
-3. **Load Imbalance**  
+4. **Load Imbalance**  
    - Uneven particle distribution across processors leads to an imbalanced computational load.
    - Some processors handle significantly more calculations than others, reducing resource utilization and overall performance.
 
