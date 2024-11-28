@@ -23,9 +23,13 @@ Molecular Dynamics (MD) simulations are computationally intensive, requiring eff
    - Some processors handle significantly more calculations than others, reducing resource utilization and overall performance.
 
 ## Objectives
-- Optimize memory access patterns to reduce cache miss rates.
-- Minimize communication overhead by optimizing inter-node communication.
-- Address load imbalance to ensure efficient resource utilization across processing units.
+Use Hilbert and Morton curves to improve cache hit rates, reduce memory access overhead, and enhance computational efficiency. 
+
+Step-by-Step Plan for Optimizing MD Simulation Using Hilbert or Morton Curves：
+1. Partition the 3D simulation space into smaller cells or grids, where each cell contains a certain number of particles based on spatial distribution.
+2. Generate Hilbert or Morton curve indices for each cell to map the 3D spatial structure into a 1D sequence while preserving spatial locality. Store cells in memory based on this 1D indexing to improve data access patterns.
+3. Process cells in the order defined by the Hilbert or Morton curve.
+4. Use performance analysis tools to monitor cache hit rates and overall execution time. Compare results with the baseline (non-optimized approach) to verify the impact of reordering.
 
 ## Proposed Solutions
 - Refactor the triple nested loops for better memory locality.
