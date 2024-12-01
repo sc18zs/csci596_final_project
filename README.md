@@ -44,13 +44,13 @@ Since this program serves as the foundation for parallel molecular dynamics simu
 
 ## Proposed Solutions
 **Optimization Plan for the Provided Code Using Hilbert and Morton Curves**
-- Implementing Spatial Mapping with Hilbert/Morton Curves
-1. Assign a **Hilbert** or **Morton index** to each cell to map the 3D space into a 1D sequence.
-2. Before the force calculation (`compute_accel`), reorder particles in memory based on their cell's curve index.
-3. Traverse cells in the order defined by the Hilbert or Morton curve. Access neighboring cells in this order for force calculations to leverage the reordered memory layout.
+1. Implementing Spatial Mapping with Hilbert/Morton Curves
+- Assign a **Hilbert** or **Morton** index to each cell to map the 3D space into a 1D sequence.
+- Before the force calculation (`compute_accel`), reorder particles in memory based on their cell's curve index.
+- Traverse cells in the order defined by the Hilbert or Morton curve. Access neighboring cells in this order for force calculations to leverage the reordered memory layout.
 
-- Profiling and Performance Metrics
-Compare the execution time, communication cost, and scalability (e.g., strong and weak scaling) of the optimized code with the original version.
+2. Profiling and Performance Metrics
+- Compare the execution time, communication cost, and scalability (e.g., strong and weak scaling) of the optimized code with the original version.
 
 
 
