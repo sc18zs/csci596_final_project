@@ -49,13 +49,22 @@ Since this program serves as the foundation for parallel molecular dynamics simu
 
 2. Profiling and Performance Metrics
 - Compare the execution time, communication cost, and scalability (e.g., strong and weak scaling) of the optimized code with the original version.
+- 
 
+**Implement load balancing for distributing computational work more evenly**
+Proposed method attempts to maintain an even distribution of atoms across processors by adjusting the number of processors in each dimension (represented by the vproc array). The goal is to reduce load imbalance when the number of atoms per processor deviates significantly from the ideal value.
+
+1. The function first calculates the number of atoms each processor should ideally have (atoms_per_proc) based on the total number of atoms (nglob) and the number of processors.
+2. Then it checks the imbalance of atoms assigned to the current processor. If the difference (imbalance) between the number of atoms assigned to this processor and the ideal number (atoms_per_proc) exceeds a certain threshold (THRESHOLD), it tries to redistribute the atoms across processors. In case of significant imbalance, the topology (i.e., the vproc array, which likely defines the grid of processors) is adjusted to ensure that atoms are more evenly distributed.
 
 ## Expected Results
 1. Higher Cache Hit Rates: Reordering particle data based on Hilbert/Morton curves will improve memory locality, leading to significantly reduced cache misses.
 
 2. Reduced Execution Time: Enhanced memory access patterns will optimize the performance of critical sections like compute_accel, resulting in faster force calculations.
 
+3. Improved Scalability: The balance load function periodically checks for these imbalances and redistributes the atoms (or domain) to ensure that each process is responsible for approximately the same number of atoms. This reduces idle time and improves the efficiency of the overall simulation.
+
+4. Reduced Simulation Time: Load balancing can adapt dynamically and can optimize resource utilization, leading to a reduced running time.
 
 ## Acknowledgments
 This project is part of the CSCI596 course and focuses on enhancing the efficiency of molecular dynamics simulations through innovative computational methods.
