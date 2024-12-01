@@ -52,6 +52,7 @@ Since this program serves as the foundation for parallel molecular dynamics simu
 - 
 
 **Implement load balancing for distributing computational work more evenly**
+
 Proposed method attempts to maintain an even distribution of atoms across processors by adjusting the number of processors in each dimension (represented by the vproc array). The goal is to reduce load imbalance when the number of atoms per processor deviates significantly from the ideal value.
 
 1. The function first calculates the number of atoms each processor should ideally have (atoms_per_proc) based on the total number of atoms (nglob) and the number of processors.
