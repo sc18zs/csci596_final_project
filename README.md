@@ -53,7 +53,7 @@ Since this program serves as the foundation for parallel molecular dynamics simu
 
 **Implement load balancing for distributing computational work more evenly**
 
-Proposed method attempts to maintain an even distribution of atoms across processors by adjusting the number of processors in each dimension. The goal is to reduce load imbalance when the number of atoms per processor deviates significantly from the ideal value.
+Proposed method attempts to maintain an even distribution of atoms across processors by adjusting the number of processors in each dimension. The goal is to reduce load imbalance when the number of atoms per processor deviates significantly from the ideal value. Load balancing occurs at regular intervals.
 
 1. The function first calculates the number of atoms each processor should ideally have based on the total number of atoms and the number of processors.
 2. Then it checks the imbalance of atoms assigned to the current processor. If the difference (imbalance) between the number of atoms assigned to this processor and the ideal number  exceeds a certain threshold, it tries to redistribute the atoms across processors. In case of significant imbalance, the topology is adjusted to ensure that atoms are more evenly distributed.
