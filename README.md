@@ -27,7 +27,6 @@ Molecular Dynamics (MD) simulations are computationally intensive, requiring eff
 
 Step-by-Step Plan for Optimizing MD Simulation Using Hilbert or Morton Curves：
 - Improve memory access locality and minimize cache misses by reordering particles based on spatial locality.
-- Reduce inter-node communication by aligning particle data with processor boundaries.
 - Use performance analysis tools to monitor cache hit rates and overall execution time. Compare results with the baseline (non-optimized approach) to verify the impact of reordering.
 
 ## Previous work
@@ -44,7 +43,19 @@ Additionally, the program reports the total runtime and communication time (`CPU
 Since this program serves as the foundation for parallel molecular dynamics simulations, all future enhancements will build upon its existing structure and functionality.
 
 ## Proposed Solutions
-- Refactor the triple nested loops for better memory locality.
+**Optimization Plan for the Provided Code Using Hilbert and Morton Curves**
+- Implementing Spatial Mapping with Hilbert/Morton Curves
+1. Assign a **Hilbert** or **Morton index** to each cell to map the 3D space into a 1D sequence.
+2. Before the force calculation (`compute_accel`), reorder particles in memory based on their cell's curve index.
+3. Traverse cells in the order defined by the Hilbert or Morton curve. Access neighboring cells in this order for force calculations to leverage the reordered memory layout.
+
+- Profiling and Performance Metrics
+Compare the execution time, communication cost, and scalability (e.g., strong and weak scaling) of the optimized code with the original version.
+
+
+
+
+
 - Implement optimized communication protocols for parallel computation.
   
 - Proposed method attempts to maintain an even distribution of atoms across processors by adjusting the number of processors in each dimension (represented by the vproc array). The goal is to reduce load imbalance when the number of atoms per processor deviates significantly from the ideal value.
