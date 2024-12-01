@@ -26,9 +26,8 @@ Molecular Dynamics (MD) simulations are computationally intensive, requiring eff
 1. Use Hilbert and Morton curves to improve cache hit rates, reduce memory access overhead, and enhance computational efficiency. 
 
 Step-by-Step Plan for Optimizing MD Simulation Using Hilbert or Morton Curves：
-- Partition the 3D simulation space into smaller cells or grids, where each cell contains a certain number of particles based on spatial distribution.
-- Generate Hilbert or Morton curve indices for each cell to map the 3D spatial structure into a 1D sequence while preserving spatial locality. Store cells in memory based on this 1D indexing to improve data access patterns.
-- Process cells in the order defined by the Hilbert or Morton curve.
+- Improve memory access locality and minimize cache misses by reordering particles based on spatial locality.
+- Reduce inter-node communication by aligning particle data with processor boundaries.
 - Use performance analysis tools to monitor cache hit rates and overall execution time. Compare results with the baseline (non-optimized approach) to verify the impact of reordering.
 
 ## Previous work
