@@ -32,7 +32,8 @@ Step-by-Step Plan for Optimizing MD Simulation Using Hilbert or Morton Curves：
 - Use performance analysis tools to monitor cache hit rates and overall execution time. Compare results with the baseline (non-optimized approach) to verify the impact of reordering.
 
 ## Previous work
-#pmd.c
+### pmd.c
+
 This program implements a parallel molecular dynamics simulation, utilizing the **MPI** standard. It provides a detailed record of the molecular dynamics simulation, including:
 
 - Time steps (`stepCount * DeltaT`),
