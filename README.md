@@ -27,6 +27,13 @@ Molecular Dynamics (MD) simulations are computationally intensive, requiring eff
 > + Improve memory access locality and minimize cache misses by reordering particles based on spatial locality.
 > + Use performance analysis tools to monitor cache hit rates and overall execution time. Compare results with the baseline (non-optimized approach) to verify the impact of reordering.
 
+
+2. Using load balancing to ensure the computational work is evenly distributed across all processors during a molecular dynamics simulation. When some processors have more atoms to compute than others, it creates inefficiency as some processors sit idle waiting for the heavily loaded ones to finish.
+> + Performing a load balancing check every certain step and see if imbalance has occurred, to simplify, we may dentify the most overloaded and underloaded processors.
+> + Then the goal is try to move atoms from the overloaded to underloaded. Update such information and continue simluation.
+
+
+
 ## Previous work
 ### pmd.c
 
