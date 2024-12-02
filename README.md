@@ -49,7 +49,6 @@ Since this program serves as the foundation for parallel molecular dynamics simu
 
 2. Profiling and Performance Metrics
 - Compare the execution time, communication cost, and scalability (e.g., strong and weak scaling) of the optimized code with the original version.
-- 
 
 **Implement load balancing for distributing computational work more evenly**
 
