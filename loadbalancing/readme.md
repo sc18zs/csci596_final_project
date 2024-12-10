@@ -45,3 +45,61 @@ Key Features of the Load Balancing:
 
 
     
+
+
+**=== Load Balance Check at Step 100 ===**
+Initial atom distribution:
+Process 0: 11985 atoms
+Process 1: 10705 atoms
+Process 2: 27931 atoms
+Process 3: 26793 atoms
+load threshold is:1.050000
+Load imbalance metrics:
+Max atoms: 27931, Min atoms: 10705
+Current imbalance ratio: 2.609155
+
+Final atom distribution:
+Process 0: 11995 atoms
+Process 1: 10705 atoms
+Process 2: 27921 atoms
+Process 3: 26793 atoms
+
+
+**Improvment - numerical overflow**
+
+Extremely large forces happen and indicate a serious issue with particle positions - likely atoms are far too close to each other, causing numerical overflow in the Lennard-Jones force calculation. We could add a minimum distance check and position validation as will be shown in the code. However, this is very computational expensive and not able to get results for serval results. For each atom, we must calculate forces with all nearby atoms. This involves checking atoms in 27 neighboring cells (3×3×3 region)
+Complexity is roughly O(N²) in the worst case for N atoms in neighboring cells.
+
+Square root calculations
+Division operations
+Multiple floating-point multiplications
+Key Changes:
+    In compute_accel():
+        
+        Added minimum separation check (rMin2)
+        Added force capping (maxForce)
+        Improved cell index calculation with bounds checking
+        Added periodic boundary enforcement
+    
+
+    In half_kick():
+
+        Added velocity capping (vmax)
+        Added warning messages for capped velocities
+
+
+    In atom_move():
+
+        Added position and velocity validation
+        Added checks for NaN and infinity
+        Improved periodic boundary enforcement
+
+
+    In eval_props():
+
+        Added energy validation
+        Added error handling for unreasonable energy values
+        
+
+
+
