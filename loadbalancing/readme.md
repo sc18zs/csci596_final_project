@@ -74,6 +74,8 @@ Square root calculations
 Division operations
 Multiple floating-point multiplications
 Key Changes:
+
+
     In compute_accel():
         
         Added minimum separation check (rMin2)
