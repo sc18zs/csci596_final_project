@@ -12,6 +12,7 @@ This report analyzes the implementation of dynamic load balancing functionality 
 
 
 **Creating manually a imbalance senario.**
+
     if (sid == 1) {
         // Process 1 keeps only 40% of its atoms
         n = (int)(n * 0.4);
@@ -26,5 +27,21 @@ This report analyzes the implementation of dynamic load balancing functionality 
         }
         printf("Process 0: Increased to %d atoms\n", n);
     }
+
+    
+**Modified Single Step**
+
+
+**Load Balancing Function**
+
+Key Features of the Load Balancing:
+    
+    Periodic checks: Runs every load_balance_interval steps
+    Threshold-based: Only triggers if imbalance exceeds threshold
+    Boundary-aware: Transfers atoms near process boundaries
+    Limited transfers: Maximum 10 atoms per step to avoid instability is used in the output in the folder. Large values lead to instability and crash.
+    Neighbor-only: Transfers only between adjacent processes
+    Preserves physics: Maintains periodic boundary conditions during transfers
+
 
     
