@@ -107,7 +107,26 @@ Key Changes:
 
 **Code**
 
-/*--------------------------------------------------------------------*/
+
+Key Components
+Load Imbalance Detection
+
+Gathers atom counts from all processes using MPI_Allgather
+Calculates imbalance ratio: max_atoms/min_atoms
+Triggers rebalancing if ratio exceeds load_imbalance_threshold
+
+Load Balancing Strategy
+
+Uses a spatial-based approach for 1×1×2 decomposition
+Transfers atoms between direct neighbors only (process 0 ↔ 1)
+Limits transfers to 1000 atoms per step (max_transfer)
+Targets atoms near the boundary between processes:
+
+Process 0: transfers atoms with z > (al[2]/2.0 - RCUT)
+Process 1: transfers atoms with z < RCUT
+
+
+
 void dynamic_load_balance(int step) {
     int total_procs, max_atoms, min_atoms;
     int *local_atom_counts;
