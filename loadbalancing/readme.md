@@ -105,3 +105,310 @@ Key Changes:
 
 
 
+**Code**
+
+/*--------------------------------------------------------------------*/
+void dynamic_load_balance(int step) {
+    int total_procs, max_atoms, min_atoms;
+    int *local_atom_counts;
+    int *send_counts, *recv_counts;
+    int *send_displs, *recv_displs;
+    double *send_buffer = NULL, *recv_buffer = NULL;
+    int i, j, a;
+
+    MPI_Comm_size(MPI_COMM_WORLD, &total_procs);
+
+    // Allocate arrays
+    local_atom_counts = (int*)malloc(total_procs * sizeof(int));
+    send_counts = (int*)malloc(total_procs * sizeof(int));
+    recv_counts = (int*)malloc(total_procs * sizeof(int));
+    send_displs = (int*)malloc(total_procs * sizeof(int));
+    recv_displs = (int*)malloc(total_procs * sizeof(int));
+
+    // Check allocations
+    if (!local_atom_counts || !send_counts || !recv_counts ||
+        !send_displs || !recv_displs) {
+        printf("Process %d: Memory allocation failed in load balancing\n", sid);
+        MPI_Abort(MPI_COMM_WORLD, 1);
+    }
+
+    // Debug: Print initial distribution
+    if (sid == 0) printf("\n=== Load Balance Check at Step %d ===\n", step);
+    
+    // Gather current atom distribution
+    MPI_Allgather(&n, 1, MPI_INT, local_atom_counts, 1, MPI_INT, MPI_COMM_WORLD);
+    
+    if (sid == 0) {
+        printf("Initial atom distribution:\n");
+        for (i = 0; i < total_procs; i++) {
+            printf("Process %d: %d atoms\n", i, local_atom_counts[i]);
+        }
+    }
+
+    // Calculate imbalance
+    max_atoms = min_atoms = local_atom_counts[0];
+    for (i = 1; i < total_procs; i++) {
+        if (local_atom_counts[i] > max_atoms) max_atoms = local_atom_counts[i];
+        if (local_atom_counts[i] < min_atoms) min_atoms = local_atom_counts[i];
+    }
+
+    if (sid == 0) {
+        printf("load threshold is:%f\n", load_imbalance_threshold);
+        printf("Load imbalance metrics:\n");
+        printf("Max atoms: %d, Min atoms: %d\n", max_atoms, min_atoms);
+        printf("Current imbalance ratio: %f\n", (double)max_atoms/min_atoms);
+    }
+
+    // Check if load balancing is needed
+    if ((double)max_atoms / min_atoms > load_imbalance_threshold) {
+        if (sid == 0) printf("\nLoad balancing triggered!\n");
+
+        // Calculate target distribution
+        int target_atoms = nglob / total_procs;
+        int my_excess = local_atom_counts[sid] - target_atoms;
+       // int max_transfer = (local_atom_counts[sid] * 5) / 100; // 5% limit
+        int max_transfer = 1000;  // Only transfer up to 1000 atoms at a time
+        // Initialize transfer arrays
+        for (i = 0; i < total_procs; i++) {
+            send_counts[i] = 0;
+            recv_counts[i] = 0;
+        }
+
+        // Determine transfers if we have excess atoms
+        // In dynamic_load_balance
+        // Determine transfers if we have excess atoms
+        if (my_excess > 0) {
+            // For 1×1×2 decomposition, only transfer to direct neighbor in z
+            int partner = (sid == 0) ? 1 : 0;
+            int their_excess = local_atom_counts[partner] - target_atoms;
+            
+            // Initialize send_counts
+            for (i = 0; i < total_procs; i++) {
+                send_counts[i] = 0;
+            }
+            
+            if (their_excess < 0) {
+                // We have excess, they have deficit
+                int transfer = min(my_excess / 2, abs(their_excess));
+                transfer = min(transfer, max_transfer);
+                
+                // Only transfer atoms near the boundary with neighbor
+                if (sid == 0) {
+                    // Process 0: transfer atoms with largest z coordinates
+                    int count = 0;
+                    for (i = 0; i < n && count < transfer; i++) {
+                        if (r[i][2] > al[2]/2.0 - RCUT) {  // Near upper boundary
+                            // Swap this atom to the transfer region
+                            if (i < n - count - 1) {
+                                for (a = 0; a < 3; a++) {
+                                    double tmp_r = r[i][a];
+                                    double tmp_rv = rv[i][a];
+                                    r[i][a] = r[n-count-1][a];
+                                    rv[i][a] = rv[n-count-1][a];
+                                    r[n-count-1][a] = tmp_r;
+                                    rv[n-count-1][a] = tmp_rv;
+                                }
+                            }
+                            count++;
+                        }
+                    }
+                    send_counts[partner] = count;
+                } else {
+                    // Process 1: transfer atoms with smallest z coordinates
+                    int count = 0;
+                    for (i = 0; i < n && count < transfer; i++) {
+                        if (r[i][2] < RCUT) {  // Near lower boundary
+                            // Swap this atom to the transfer region
+                            if (i < n - count - 1) {
+                                for (a = 0; a < 3; a++) {
+                                    double tmp_r = r[i][a];
+                                    double tmp_rv = rv[i][a];
+                                    r[i][a] = r[n-count-1][a];
+                                    rv[i][a] = rv[n-count-1][a];
+                                    r[n-count-1][a] = tmp_r;
+                                    rv[n-count-1][a] = tmp_rv;
+                                }
+                            }
+                            count++;
+                        }
+                    }
+                    send_counts[partner] = count;
+                }
+            }
+        }
+        
+        
+        
+        
+        
+        // Exchange transfer counts
+        for (i = 0; i < total_procs; i++) {
+            if (i == sid) continue;
+            int partner_send_count;
+            MPI_Sendrecv(&send_counts[i], 1, MPI_INT, i, 0,
+                        &partner_send_count, 1, MPI_INT, i, 0,
+                        MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            recv_counts[i] = partner_send_count;
+        }
+
+        // Calculate total transfers and displacements
+        int total_send = 0;
+        int total_recv = 0;
+        send_displs[0] = 0;
+        recv_displs[0] = 0;
+
+        for (i = 0; i < total_procs; i++) {
+            total_send += send_counts[i];
+            total_recv += recv_counts[i];
+            if (i > 0) {
+                send_displs[i] = send_displs[i-1] + send_counts[i-1];
+                recv_displs[i] = recv_displs[i-1] + recv_counts[i-1];
+            }
+        }
+
+        // Debug output
+        printf("Process %d: Total atoms to send=%d, receive=%d\n",
+               sid, total_send, total_recv);
+
+        // Allocate transfer buffers if needed
+        if (total_send > 0) {
+            send_buffer = (double*)malloc(total_send * 6 * sizeof(double));
+            if (!send_buffer) {
+                printf("Process %d: Failed to allocate send buffer\n", sid);
+                MPI_Abort(MPI_COMM_WORLD, 1);
+            }
+        }
+
+        if (total_recv > 0) {
+            recv_buffer = (double*)malloc(total_recv * 6 * sizeof(double));
+            if (!recv_buffer) {
+                if (send_buffer) free(send_buffer);
+                printf("Process %d: Failed to allocate receive buffer\n", sid);
+                MPI_Abort(MPI_COMM_WORLD, 1);
+            }
+        }
+
+        // Pack send buffer if we're sending atoms
+        if (total_send > 0) {
+            int idx = 0;
+            int atom_start = n - total_send;
+            
+            printf("Process %d: Packing atoms from index %d to %d\n",
+                   sid, atom_start, n-1);
+            
+            for (i = 0; i < total_send; i++) {
+                int src_idx = atom_start + i;
+                
+                // Apply periodic boundaries before packing
+                for (a = 0; a < 3; a++) {
+                    while (r[src_idx][a] < 0) r[src_idx][a] += al[a];
+                    while (r[src_idx][a] >= al[a]) r[src_idx][a] -= al[a];
+                }
+                
+                // Print values before packing
+                printf("Process %d: Pre-pack atom %d: pos=(%.3f,%.3f,%.3f) vel=(%.3f,%.3f,%.3f)\n",
+                       sid, src_idx,
+                       r[src_idx][0], r[src_idx][1], r[src_idx][2],
+                       rv[src_idx][0], rv[src_idx][1], rv[src_idx][2]);
+                       
+                // Pack positions
+                send_buffer[idx++] = r[src_idx][0];
+                send_buffer[idx++] = r[src_idx][1];
+                send_buffer[idx++] = r[src_idx][2];
+                // Pack velocities
+                send_buffer[idx++] = rv[src_idx][0];
+                send_buffer[idx++] = rv[src_idx][1];
+                send_buffer[idx++] = rv[src_idx][2];
+            }
+            
+            // Print first packed atom
+            printf("Process %d: First packed values: (%.3f,%.3f,%.3f)(%.3f,%.3f,%.3f)\n",
+                   sid, send_buffer[0], send_buffer[1], send_buffer[2],
+                   send_buffer[3], send_buffer[4], send_buffer[5]);
+                   
+            n -= total_send;
+        }
+
+        // Handle MPI communication
+        for (i = 0; i < total_procs; i++) {
+            send_counts[i] *= 6;
+            recv_counts[i] *= 6;
+            send_displs[i] *= 6;
+            recv_displs[i] *= 6;
+            printf("Process %d: Rank %d - send=%d recv=%d sdispl=%d rdispl=%d\n",
+                   sid, i, send_counts[i], recv_counts[i], send_displs[i], recv_displs[i]);
+        }
+
+        int err = MPI_Alltoallv(send_buffer, send_counts, send_displs, MPI_DOUBLE,
+                                recv_buffer, recv_counts, recv_displs, MPI_DOUBLE,
+                                MPI_COMM_WORLD);
+
+        for (i = 0; i < total_procs; i++) {
+            send_counts[i] /= 6;
+            recv_counts[i] /= 6;
+            send_displs[i] /= 6;
+            recv_displs[i] /= 6;
+        }
+
+        // Unpack received atoms
+        if (total_recv > 0) {
+            int idx = 0;
+            int old_n = n;
+            
+            printf("Process %d: Unpacking %d atoms starting at index %d\n",
+                   sid, total_recv, n);
+            
+            // Print first received atom before unpacking
+            if (total_recv > 0) {
+                printf("Process %d: First received values: (%.3f,%.3f,%.3f)(%.3f,%.3f,%.3f)\n",
+                       sid, recv_buffer[0], recv_buffer[1], recv_buffer[2],
+                       recv_buffer[3], recv_buffer[4], recv_buffer[5]);
+            }
+            
+            n += total_recv;
+            
+            for (i = 0; i < total_recv; i++) {
+                int dest_idx = old_n + i;
+                // Unpack positions
+                r[dest_idx][0] = recv_buffer[idx++];
+                r[dest_idx][1] = recv_buffer[idx++];
+                r[dest_idx][2] = recv_buffer[idx++];
+                // Unpack velocities
+                rv[dest_idx][0] = recv_buffer[idx++];
+                rv[dest_idx][1] = recv_buffer[idx++];
+                rv[dest_idx][2] = recv_buffer[idx++];
+                
+                // Print after unpacking
+                printf("Process %d: Post-unpack atom %d: pos=(%.3f,%.3f,%.3f) vel=(%.3f,%.3f,%.3f)\n",
+                       sid, dest_idx,
+                       r[dest_idx][0], r[dest_idx][1], r[dest_idx][2],
+                       rv[dest_idx][0], rv[dest_idx][1], rv[dest_idx][2]);
+            }
+        }
+
+        // Clean up transfer buffers
+        if (send_buffer) free(send_buffer);
+        if (recv_buffer) free(recv_buffer);
+
+        // Update neighbor lists and boundary atoms
+        atom_copy();
+
+        // Verify new distribution
+        MPI_Allgather(&n, 1, MPI_INT, local_atom_counts, 1, MPI_INT, MPI_COMM_WORLD);
+        if (sid == 0) {
+            printf("\nFinal atom distribution:\n");
+            for (i = 0; i < total_procs; i++) {
+                printf("Process %d: %d atoms\n", i, local_atom_counts[i]);
+            }
+        }
+    } else {
+        if (sid == 0) printf("No load balancing needed at this step.\n");
+    }
+
+    // Clean up arrays
+    free(local_atom_counts);
+    free(send_counts);
+    free(recv_counts);
+    free(send_displs);
+    free(recv_displs);
+}
