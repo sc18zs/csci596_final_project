@@ -65,10 +65,13 @@ Process 2: 27921 atoms
 Process 3: 26793 atoms
 
 
-**Improvment - numerical overflow**
+**Error - numerical overflow**
 
 Extremely large forces happen and indicate a serious issue with particle positions - likely atoms are far too close to each other, causing numerical overflow in the Lennard-Jones force calculation. We could add a minimum distance check and position validation as will be shown in the code. However, this is very computational expensive and not able to get results for serval results. For each atom, we must calculate forces with all nearby atoms. This involves checking atoms in 27 neighboring cells (3×3×3 region)
 Complexity is roughly O(N²) in the worst case for N atoms in neighboring cells.
+
+slurmstepd: error: *** JOB 28336171 ON a01-07 CANCELLED AT 2024-12-10T13:05:07 DUE TO TIME LIMIT ***
+
 
 Square root calculations
 Division operations
