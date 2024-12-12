@@ -1,5 +1,7 @@
 # CSCI596 Final Project: Methods to Enhance the Parallel Molecular Dynamics (MD) Program
 
+**The contents of this codebase have been moved to a new repository https://github.com/sc18zs/final_project_cs596/tree/main**
+
 ## Group Members
 - Zihan Shen
 - Yuzhu Tang
